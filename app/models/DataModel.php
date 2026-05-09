@@ -41,17 +41,18 @@ abstract class DataModel
 
     public static function selectAll(int $limit = 25): array
     {
-        return static::getDatabase()->selectAll(static::getTableName(), $limit);
+        return static::getDatabase()->selectAll(static::getTableName(), "*", $limit);
     }
 
     public static function delete(array $where): bool
     {
-        return self::getDatabase()->delete(static::getTableName(), $where);
+        return static::getDatabase()->delete(static::getTableName(), $where);
     }
 
     public static function exists(array $where): bool
     {
-        return self::getDatabase()->exists(static::getTableName(), $where);
+        return static::getDatabase()->exists(static::getTableName(), $where);
     }
+
 
 }

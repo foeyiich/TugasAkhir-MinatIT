@@ -51,7 +51,7 @@ final class Database
         $columnsSql = implode(", ", $columnStrings);
 
         if ($replace) {
-            self::dropTable($tableName);
+            $this->dropTable($tableName);
         }
 
         $ifNotExists = $replace ? "" : "IF NOT EXISTS";
@@ -82,10 +82,9 @@ final class Database
 
     public function select(string $tableName, array $where, array|string $data = "*", int $limit = 25): array
     {
-        UtilityClass::validateListArray($data);
         UtilityClass::validateMapArray($where);
         if (empty($where)) {
-            return Database::selectAll($tableName);
+            return $this->selectAll($tableName, $data, $limit);
         }
         if ($limit <= 0) {
             throw new InvalidArgumentException("Limit must be greater than 0");
@@ -108,12 +107,22 @@ final class Database
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function selectAll(string $tableName, int $limit = 100): array
+    public function selectAll(string $tableName, array|string $data = "*", int $limit = 100): array
     {
-        $sql = "SELECT * FROM $tableName LIMIT $limit";
+        if (is_array($data)) {
+            UtilityClass::validateListArray($data);
+            $dataSql = implode(", ", $data);
+        } else {
+            $dataSql = $data;
+        }
+
+        $sql = "SELECT $dataSql FROM $tableName LIMIT $limit";
+
         $stmt = $this->getConnection()->query($sql);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
     public function update(string $tableName, array $set, array $where): bool
     {
@@ -144,7 +153,7 @@ final class Database
 
     public function exists(string $tableName, array $where): bool
     {
-        return !empty(Database::select($tableName, $where, '*', 1));
+        return !empty($this->select($tableName, $where, '*', 1));
     }
 
     private static function prepareSqlPairs(string $separator, array $data): string

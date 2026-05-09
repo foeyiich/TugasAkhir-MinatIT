@@ -1,6 +1,6 @@
 <?php
-
 namespace TugasAkhir\utils;
+use InvalidArgumentException;
 
 use InvalidArgumentException;
 

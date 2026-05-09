@@ -38,6 +38,7 @@ class User extends DataModel
     }
 
     public string $password;
+    private string $rawPassword;
 
     public function __construct(
         public string        $email,
@@ -52,19 +53,27 @@ class User extends DataModel
             throw new InvalidArgumentException("Invalid email address");
         }
 
+        $this->rawPassword = $rawPassword;
+
         if (is_int($role)) {
-            $this->role = Role::findById($role);
+            $foundRole = Role::findById($role);
+            if($foundRole === null) {
+                throw new InvalidArgumentException("Role with id '$role' not found");
+            }
+            $this->role = $foundRole;
         }
 
         if ($hash_password) {
             $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
+        } else {
+            $this->password = $rawPassword;
         }
     }
 
     public function register(): void
     {
         $id = $this->id;
-        if (static::exists(["id" => $id])) {
+        if ($this->id !== null && static::exists(['id' => $id])) {
             throw new InvalidArgumentException("User with id '$id' already exists");
         }
 
@@ -93,9 +102,12 @@ class User extends DataModel
     {
         $userData = static::get(['email' => $this->email]);
 
-        if ($userData && password_verify($this->password, $userData->password)) {
+        if ($userData && password_verify($this->rawPassword, $userData->password)) {
             $_SESSION['user_id'] = $userData->id;
             $_SESSION['username'] = $userData->username;
+            $_SESSION['role_id'] = $userData->role->id;
+
+            static::update(['last_login' => date("Y-m-d H:i:s")], ['id' => $userData->id]);
             return $userData;
         }
 
@@ -120,7 +132,7 @@ class User extends DataModel
     public static function update(array $set, array $where): bool
     {
         $set['updated_at'] = date("Y-m-d H:i:s");
-        return DataModel::update($set, $where);
+        return parent::update($set, $where);
     }
 
 }

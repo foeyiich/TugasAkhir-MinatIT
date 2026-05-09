@@ -3,6 +3,7 @@
 namespace TugasAkhir\models\roles;
 
 use InvalidArgumentException;
+use RuntimeException;
 use TugasAkhir\core\Database;
 use TugasAkhir\core\Registries;
 use TugasAkhir\models\DataModel;
@@ -50,20 +51,79 @@ class Role extends DataModel
             return null;
         }
         $r = $data[0];
-        return new self($r['name'], $r['description'], json_decode($r['permissions'], true), (int)$r['id']);
+        return new self(
+            $r['name'],
+            $r['description'],
+            self::permissionsFromJson($r['permissions']),
+            (int) $r['id']
+        );
     }
 
     public static function getOrWrite(int $id, self $role): self
     {
-        if (!self::exists(['id' => $id])) {
-            self::insert([
-                "id" => $id,
-                "name" => $role->name,
-                "description" => $role->description,
-                "permissions" => $role->permissions
-            ]);
+        $value = self::findById($id);
+
+        if ($value !== null) {
+            return $value;
         }
-        return self::findById($id);
+
+        self::insert([
+            "id" => $id,
+            "name" => $role->name,
+            "description" => $role->description,
+            "permissions" => self::permissionsToJson($role->permissions),
+        ]);
+
+        $createdRole = self::findById($id);
+
+        if ($createdRole === null) {
+            throw new RuntimeException("Error bikin role dengan id $id");
+        }
+
+        return $createdRole;
+    }
+
+    public static function permissionsToJson(array $permissions): string
+    {
+        return json_encode(array_map(
+            fn($permission) => $permission instanceof Permission ? $permission->name : $permission,
+            $permissions
+        ));
+    }
+
+    public static function permissionsFromJson(string $json): array
+    {
+        $permissionNames = json_decode($json, true) ?? [];
+        return array_map(
+            fn($permissionName) => constant(Permission::class . "::" . $permissionName),
+            $permissionNames
+        );
+    }
+
+
+    public static function seedDefaults(): void
+    {
+        self::getOrWrite(1, new self("Guru", "Admin guru", [
+            Permission::UPDATE_OWN_PASSWORD,
+            Permission::MANAGE_GRADES,
+            Permission::MANAGE_ATTENDANCE,
+        ]));
+
+        self::getOrWrite(2, new self("Siswa", "User siswa", [
+            Permission::UPDATE_OWN_PASSWORD,
+            Permission::READ_OWN_GRADES,
+            Permission::MANAGE_OWN_DOCUMENTS,
+        ]));
+
+        self::getOrWrite(3, new self("Kurikulum", "Super admin", [
+            Permission::UPDATE_OWN_PASSWORD,
+            Permission::MANAGE_GRADES,
+            Permission::MANAGE_ATTENDANCE,
+            Permission::MANAGE_ACCOUNTS,
+            Permission::MANAGE_PPM_FORMS,
+            Permission::MANAGE_ANNOUNCEMENTS,
+            Permission::MANAGE_ADMIN_DOCUMENTS,
+        ]));
     }
 
 }

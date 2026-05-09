@@ -3,8 +3,14 @@ namespace TugasAkhir\models\roles;
 
 enum Permission
 {
-    case CREATE_ANNOUNCEMENT;
-    case EDIT_ANNOUNCEMENT;
-    case DELETE_ANNOUNCEMENT;
+    case UPDATE_OWN_PASSWORD;
+    case MANAGE_GRADES;
+    case READ_OWN_GRADES;
+    case MANAGE_ATTENDANCE;
+    case MANAGE_ACCOUNTS;
+    case MANAGE_PPM_FORMS;
+    case MANAGE_ANNOUNCEMENTS;
+    case MANAGE_ADMIN_DOCUMENTS;
+    case MANAGE_OWN_DOCUMENTS;
 }
 
