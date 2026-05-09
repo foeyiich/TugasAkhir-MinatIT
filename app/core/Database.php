@@ -43,7 +43,7 @@ final class Database
     {
         UtilityClass::validateMapArray($schema);
 
-        $conn = self::getConnection();
+        $conn = $this->getConnection();
         $columnStrings = [];
         foreach ($schema as $columnName => $definition) {
             $columnStrings[] = "`$columnName` $definition";
@@ -62,14 +62,14 @@ final class Database
 
     public function dropTable(string $tableName): false|int
     {
-        $conn = self::getConnection();
+        $conn = $this->getConnection();
         return $conn->exec("DROP TABLE IF EXISTS `$tableName` ");
     }
 
     public function insert(string $tableName, array $data): bool
     {
         UtilityClass::validateMapArray($data);
-        $conn = self::getConnection();
+        $conn = $this->getConnection();
 
         $columns = implode(", ", array_keys($data));
         $placeholders = implode(", ", array_fill(0, count($data), "?"));
@@ -102,16 +102,16 @@ final class Database
 
         $sql = "SELECT $dataSql FROM $tableName WHERE $whereClause LIMIT $limit";
 
-        $stmt = self::getConnection()->prepare($sql);
+        $stmt = $this->getConnection()->prepare($sql);
         $stmt->execute(array_values($where));
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function selectAll(string $tableName, array|string $data = "*", int $limit = 100): array
+    public function selectAll(string $tableName, int $limit = 100): array
     {
-        $sql = "SELECT $data FROM $tableName LIMIT $limit";
-        $stmt = self::getConnection()->query($sql);
+        $sql = "SELECT * FROM $tableName LIMIT $limit";
+        $stmt = $this->getConnection()->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -138,7 +138,7 @@ final class Database
         $whereClause = Database::prepareSqlPairs(" AND ", array_keys($where));
 
         $sql = "DELETE FROM $tableName WHERE $whereClause";
-        $stmt = self::getConnection()->prepare($sql);
+        $stmt = $this->getConnection()->prepare($sql);
         return $stmt->execute(array_values($where));
     }
 

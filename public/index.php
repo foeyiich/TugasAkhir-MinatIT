@@ -19,7 +19,6 @@ spl_autoload_register(function ($className) {
     }
 
     $relativeClass = substr($className, $len);
-
     $file = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
 
     if (file_exists($file)) {

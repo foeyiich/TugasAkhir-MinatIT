@@ -46,15 +46,16 @@ class Role extends DataModel
     public static function findById(int $id): ?self
     {
         $data = self::select(['id' => $id], '*', 1);
-        if (empty($data)) return null;
+        if (empty($data)) {
+            return null;
+        }
         $r = $data[0];
         return new self($r['name'], $r['description'], json_decode($r['permissions'], true), (int)$r['id']);
     }
 
     public static function getOrWrite(int $id, self $role): self
     {
-        $value = self::findById($id);
-        if (is_null($value)) {
+        if (!self::exists(['id' => $id])) {
             self::insert([
                 "id" => $id,
                 "name" => $role->name,
@@ -62,7 +63,7 @@ class Role extends DataModel
                 "permissions" => $role->permissions
             ]);
         }
-        return $value;
+        return self::findById($id);
     }
 
 }
