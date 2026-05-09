@@ -23,9 +23,3 @@ $database = Database::getConnection();
 
 DataModel::setConnection($database);
 User::init();
-
-try {
-    new User("email@gmail.com", "foeyii", "123", 1);
-} catch (\PDOException $e) {
-    echo $e->getMessage();
-}
