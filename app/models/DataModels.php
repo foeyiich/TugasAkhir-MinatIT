@@ -1,6 +1,6 @@
 ﻿<?php
 
-abstract class DataModel
+abstract class DataModels
 {
     protected static PDO $db;
 
@@ -23,18 +23,15 @@ abstract class DataModel
             $columnSql[] = "$name $definition";
         }
         $sql = "CREATE TABLE IF NOT EXISTS $tableName (" . implode(", ", $columnSql) . ")";
-
         static::$db->exec($sql);
     }
 
     public static function update(array $set, array $where): bool
     {
-        self::validateMapArray($set);
-        self::validateMapArray($where);
+        UtilityClass::validateMapArray($set);
+        UtilityClass::validateMapArray($where);
 
         $tableName = static::getTableName();
-
-        $set['updated_at'] = date('Y-m-d H:i:s');
 
         $setSql = static::buildPlaceholderString(", ", array_keys($set));
         $whereSql = static::buildPlaceholderString(" AND ", array_keys($where));
@@ -50,7 +47,7 @@ abstract class DataModel
 
     public static function insert(array $data): false|string
     {
-        self::validateMapArray($data);
+        UtilityClass::validateMapArray($data);
 
         $tableName = static::getTableName();
         $columns = implode(", ", array_keys($data));
@@ -66,7 +63,7 @@ abstract class DataModel
 
     public static function select(array $where, array|string $data = "*", int $limit = 25): array
     {
-        self::validateMapArray($where);
+        UtilityClass::validateMapArray($where);
         if (empty($where)) {
             return static::selectAll();
         }
@@ -78,7 +75,7 @@ abstract class DataModel
 
         $whereClause = static::buildPlaceholderString(" AND ", array_keys($where));
         if (!is_string($data)) {
-            self::validateListArray($data);
+            UtilityClass::validateListArray($data);
             $data = implode(", ", $data);
         }
 
@@ -101,13 +98,18 @@ abstract class DataModel
 
     public static function delete(array $where): bool
     {
-        self::validateMapArray($where);
+        UtilityClass::validateMapArray($where);
         $tableName = static::getTableName();
         $whereClause = static::buildPlaceholderString(" AND ", array_keys($where));
 
         $sql = "DELETE FROM $tableName WHERE $whereClause";
         $stmt = static::$db->prepare($sql);
         return $stmt->execute(array_values($where));
+    }
+
+    public static function exists(array $where): bool
+    {
+        return !empty(static::select($where, '*', 1));
     }
 
     private static function buildPlaceholderString(string $separator, array $data): string
@@ -117,20 +119,6 @@ abstract class DataModel
             $parts[] = "$column = ?";
         }
         return implode($separator, $parts);
-    }
-
-    private static function validateMapArray(array $data): void
-    {
-        if (array_is_list($data)) {
-            throw new InvalidArgumentException("Data must be a map.");
-        }
-    }
-
-    private static function validateListArray(array $data): void
-    {
-        if (!array_is_list($data)) {
-            throw new InvalidArgumentException("Data must be a list.");
-        }
     }
 
 }

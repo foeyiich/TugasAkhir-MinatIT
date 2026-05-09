@@ -13,7 +13,7 @@ class Database
         try {
             if ($type === 'sql') {
                 $dbFile = EnvironmentVariable::get(EnvKey::DB_SQL_FILE);
-                $dataSourceName = "sqlite:" . PROJECT_DIR . "/" . $dbFile;
+                $dataSourceName = "sqlite:" . PROJECT_ROOT . DIRECTORY_SEPARATOR . $dbFile;
                 $this->connection = new PDO($dataSourceName);
             } elseif ($type === "mysql") {
                 $host = EnvironmentVariable::get(EnvKey::DB_MYSQL_HOST);

@@ -1,15 +1,18 @@
 <?php
+session_start();
 
-const PROJECT_DIR = __DIR__;
+define('PROJECT_ROOT', dirname(__DIR__));
+
 spl_autoload_register(function ($className) {
     $directories = [
         'config/',
         'database/',
-        'app/Models/'
+        'app/models/users/',
+        'app/models/'
     ];
 
     foreach ($directories as $directory) {
-        $file = PROJECT_DIR . '/' . $directory . $className . '.php';
+        $file = PROJECT_ROOT . DIRECTORY_SEPARATOR . $directory . $className . '.php';
         if (file_exists($file)) {
             require_once $file;
             return;
@@ -17,9 +20,9 @@ spl_autoload_register(function ($className) {
     }
 });
 
-
 EnvironmentVariable::load();
 $database = Database::getConnection();
 
-DataModel::setConnection($database);
+DataModels::setConnection($database);
+Role::init();
 User::init();
