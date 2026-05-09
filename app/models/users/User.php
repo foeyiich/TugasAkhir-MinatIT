@@ -1,7 +1,22 @@
-﻿<?php
+<?php
 
-class User extends DataModels
+namespace TugasAkhir\models\users;
+
+use InvalidArgumentException;
+use TugasAkhir\core\Database;
+use TugasAkhir\core\Registries;
+use TugasAkhir\models\DataModel;
+use TugasAkhir\models\roles\Permission;
+use TugasAkhir\models\roles\Role;
+use UnexpectedValueException;
+
+class User extends DataModel
 {
+
+    protected static function getDatabase(): ?Database
+    {
+        return Registries::get("mainDB");
+    }
 
     protected static function getTableName(): string
     {
@@ -105,7 +120,7 @@ class User extends DataModels
     public static function update(array $set, array $where): bool
     {
         $set['updated_at'] = date("Y-m-d H:i:s");
-        return DataModels::update($set, $where);
+        return DataModel::update($set, $where);
     }
 
 }

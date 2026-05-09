@@ -1,4 +1,5 @@
-﻿<?php
+<?php
+namespace TugasAkhir\models\roles;
 
 enum Permission
 {

@@ -1,10 +1,13 @@
-﻿<?php
+<?php
+
+namespace TugasAkhir\utils;
 
 final class UtilityClass
 {
 
     private function __construct()
     {
+        // Utility class
     }
 
     public static function validateMapArray(array $data): void

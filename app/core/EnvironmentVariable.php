@@ -1,4 +1,5 @@
 <?php
+namespace TugasAkhir\core;
 
 class EnvironmentVariable
 {
@@ -8,12 +9,12 @@ class EnvironmentVariable
 
     private static array $defaults = [
         '# Database Configuration',
-        EnvKey::DB_TYPE->name => 'sql',
+        EnvKey::DB_TYPE->name => 'sqlite',
         '',
         '#  Points to the SQLite file. Ignore this if you are using MySQL.',
         EnvKey::DB_SQL_FILE->name => 'database.sqlite',
         '',
-        '#  Pointing to the MySQL server. Ignore this if you are using SQL',
+        '#  Pointing to the MySQL server. Ignore this if you are using SQLite',
         EnvKey::DB_MYSQL_HOST->name => 'localhost',
         EnvKey::DB_MYSQL_NAME->name => 'tugas_akhir',
         EnvKey::DB_MYSQL_USER->name => 'root',

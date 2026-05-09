@@ -1,5 +1,5 @@
-﻿<?php
-
+<?php
+namespace TugasAkhir\core;
 enum EnvKey
 {
     case DB_TYPE;

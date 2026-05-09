@@ -1,7 +1,21 @@
-﻿<?php
+<?php
 
-class Role extends DataModels
+namespace TugasAkhir\models\roles;
+
+use InvalidArgumentException;
+use TugasAkhir\core\Database;
+use TugasAkhir\core\Registries;
+use TugasAkhir\models\DataModel;
+use TugasAkhir\utils\UtilityClass;
+
+class Role extends DataModel
 {
+
+    protected static function getDatabase(): ?Database
+    {
+        return Registries::get("mainDB");
+    }
+
     protected static function getTableName(): string
     {
         return "roles";
@@ -18,10 +32,10 @@ class Role extends DataModels
     }
 
     public function __construct(
-        public readonly string $name,
-        public readonly string $description,
-        public readonly array  $permissions = [],
-        public readonly ?int   $id = null
+        public string $name,
+        public string $description,
+        public array  $permissions = [],
+        public ?int   $id = null
     )
     {
         UtilityClass::validateListArray($permissions);
@@ -52,15 +66,3 @@ class Role extends DataModels
     }
 
 }
-
-Role::getOrWrite(0, new Role("Guru", "", [
-
-]));
-Role::getOrWrite(0, new Role("Siswa", "", [
-
-]));
-Role::getOrWrite(0, new Role("Kurikulum", "", [
-    Permission::CREATE_ANNOUNCEMENT,
-    Permission::DELETE_ANNOUNCEMENT,
-    Permission::EDIT_ANNOUNCEMENT,
-]));
