@@ -16,9 +16,9 @@ use UnexpectedValueException;
 class User extends DataModel
 {
 
-    private const string DATE_FORMAT = 'Y-m-d H:i:s';
-    private const int SECURITY_STAMP_LENGTH = 32;
-    private const int REMEMBER_ME_TIME = 60 * 60 * 24 * 10;
+    private const DATE_FORMAT = 'Y-m-d H:i:s';
+    private const SECURITY_STAMP_LENGTH = 32;
+    private const REMEMBER_ME_TIME = 60 * 60 * 24 * 10;
 
     protected static function getDatabase(): ?Database
     {

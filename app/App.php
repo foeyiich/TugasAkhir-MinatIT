@@ -12,7 +12,7 @@ use TugasAkhir\models\users\User;
 final class App
 {
 
-    private static ?self $instance;
+    private static ?self $instance = null;
 
     public readonly Database $mainDatabase;
 
@@ -26,10 +26,12 @@ final class App
 
     private function __construct()
     {
+
+        if (is_null(self::$instance)) {
+            self::$instance = $this;
+        }
+
         EnvironmentVariable::load();
-        Role::init();
-        Role::seedDefaults();
-        User::init();
 
         if (Registries::getEnv(EnvKey::DB_TYPE) == "sqlite") {
             $this->mainDatabase = Database::createSqlite(Registries::getEnv(EnvKey::DB_SQLITE_FILE));
@@ -41,6 +43,10 @@ final class App
                 Registries::getEnv(EnvKey::DB_MYSQL_PASSWORD)
             );
         }
+
+        Role::init();
+        Role::seedDefaults();
+        User::init();
     }
 
 }

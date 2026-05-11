@@ -4,7 +4,7 @@ namespace TugasAkhir\core;
 
 class EnvironmentVariable
 {
-    public const string FILE_PATH = PROJECT_ROOT . DIRECTORY_SEPARATOR . ".env";
+    public const FILE_PATH = PROJECT_ROOT . DIRECTORY_SEPARATOR . ".env";
 
     private static array $env = [];
 
