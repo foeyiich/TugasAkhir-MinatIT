@@ -125,7 +125,12 @@ class User extends DataModel
 
     public static function authenticate(string $email, string $rawPassword, bool $rememberMe = false): ?self
     {
-        $userData = static::get(['email' => $email]);
+
+        $userData = static::get(['token' => Registries::getCookie(CookieKey::USER_TOKEN)]);
+        if (is_null($userData)) {
+            $userData = static::get(['email' => $email]);
+        }
+
 
         if ($userData && password_verify($rawPassword, $userData->password)) {
             Registries::setSession(SessionKey::USER_ID, $userData->id);
