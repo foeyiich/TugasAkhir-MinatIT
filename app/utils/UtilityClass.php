@@ -2,7 +2,6 @@
 
 namespace TugasAkhir\utils;
 
-use InvalidArgumentException;
 
 final class UtilityClass
 {
