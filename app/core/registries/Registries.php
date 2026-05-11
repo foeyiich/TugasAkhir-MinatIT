@@ -9,28 +9,40 @@ use TugasAkhir\core\registries\keys\SessionKey;
 
 final class Registries
 {
+    private static array $registry = [];
+
+    public static function bind(string $key, mixed $value): void
+    {
+        self::$registry[$key] = $value;
+    }
+
+    public static function get(string $key): mixed
+    {
+        return self::$registry[$key] ?? null;
+    }
+
     public static function getEnv(EnvKey $key): string
     {
         return EnvironmentVariable::get($key);
     }
 
-    public static function setSession(SessionKey $sessionKey, string $value = ''): void
+    public static function setSession(SessionKey $sessionKey, mixed $value = ''): void
     {
         $_SESSION[$sessionKey->name] = $value;
     }
 
-    public static function getSession(SessionKey $key): string
+    public static function getSession(SessionKey $key, mixed $default = null): mixed
     {
-        return $_SESSION[$key->name];
+        return $_SESSION[$key->name] ?? $default;
     }
 
     public static function setCookie(CookieKey $key, string $value = '', int $time = 3600): bool
     {
-        setcookie($key->name, $value, time() + $time);
+        return setcookie($key->name, $value, time() + $time, "/");
     }
 
-    public static function getCookie(CookieKey $key): string
+    public static function getCookie(CookieKey $key, mixed $default = null): mixed
     {
-        return $_COOKIE[$key->name];
+        return $_COOKIE[$key->name] ?? $default;
     }
 }

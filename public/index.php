@@ -1,5 +1,5 @@
 <?php
-
+use TugasAkhir\models\users\User;
 use TugasAkhir\App;
 
 define('PROJECT_ROOT', dirname(__DIR__));
@@ -23,16 +23,21 @@ spl_autoload_register(function ($className) {
 session_start();
 
 App::getInstance();
+$error = null;
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-Hello, World!
-</body>
-</html>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $rememberMe = isset($_POST['remember_me']);
+
+    $user = User::authenticate($email, $password, $rememberMe);
+
+    if ($user !== null) {
+        header('Location: dashboard.php');
+        exit;
+    }
+
+    $error = 'Email atau password salah.';
+}
+
+require PROJECT_ROOT . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'login.php';
