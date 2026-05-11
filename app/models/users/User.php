@@ -22,7 +22,7 @@ class User extends DataModel
 
     protected static function getDatabase(): ?Database
     {
-        return App::getInstance()->mainDatabase;
+        return Registries::get("mainDB");
     }
 
     protected static function getTableName(): string
@@ -52,6 +52,7 @@ class User extends DataModel
         public string        $username,
         string               $rawPassword,
         public Role|int      $role,
+        bool                 $hashPassword = true,
         public readonly ?int $id = null
     )
     {
@@ -67,7 +68,12 @@ class User extends DataModel
             $this->role = $foundRole;
         }
 
-        $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
+        if ($hashPassword) {
+            $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
+        } else {
+            $this->password = $rawPassword;
+        }
+
     }
 
     public function register(): void
@@ -111,7 +117,7 @@ class User extends DataModel
             return null;
         }
         $u = $data[0];
-        return new static($u['email'], $u['username'], $u['password'], $u['role_id'], (int)$u['id']);
+        return new static($u['email'], $u['username'], $u['password'], $u['role_id'], false, (int)$u['id']);
     }
 
     public static function update(array $set, array $where): bool
@@ -133,17 +139,24 @@ class User extends DataModel
 
 
         if ($userData && password_verify($rawPassword, $userData->password)) {
+            session_regenerate_id(true);
+
             Registries::setSession(SessionKey::USER_ID, $userData->id);
             Registries::setSession(SessionKey::USER_EMAIL, $userData->email);
             Registries::setSession(SessionKey::USER_USERNAME, $userData->username);
-            Registries::setSession(SessionKey::USER_ROLE, $userData->role);
+            Registries::setSession(SessionKey::USER_ROLE, $userData->role->id);
 
             if ($rememberMe) {
-                Registries::setCookie(
-                    CookieKey::USER_TOKEN,
-                    static::select(["email" => $email], ["token"])["token"],
-                    self::REMEMBER_ME_TIME,
-                );
+                $tokenRows = static::select(["email" => $email], ["token"], 1);
+                $token = $tokenRows[0]['token'] ?? null;
+
+                if ($token !== null) {
+                    Registries::setCookie(
+                        CookieKey::USER_TOKEN,
+                        $token,
+                        self::REMEMBER_ME_TIME
+                    );
+                }
             }
 
             static::update(['last_login' => date(self::DATE_FORMAT)], ['id' => $userData->id]);
