@@ -5,7 +5,7 @@ namespace TugasAkhir\models\roles;
 use InvalidArgumentException;
 use RuntimeException;
 use TugasAkhir\core\Database;
-use TugasAkhir\core\Registries;
+use TugasAkhir\core\registries\Registries;
 use TugasAkhir\models\DataModel;
 use TugasAkhir\utils\UtilityClass;
 
@@ -55,7 +55,7 @@ class Role extends DataModel
             $r['name'],
             $r['description'],
             self::permissionsFromJson($r['permissions']),
-            (int) $r['id']
+            (int)$r['id']
         );
     }
 

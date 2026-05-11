@@ -3,8 +3,11 @@
 namespace TugasAkhir\models\users;
 
 use InvalidArgumentException;
+use TugasAkhir\App;
 use TugasAkhir\core\Database;
-use TugasAkhir\core\Registries;
+use TugasAkhir\core\registries\keys\CookieKey;
+use TugasAkhir\core\registries\keys\SessionKey;
+use TugasAkhir\core\registries\Registries;
 use TugasAkhir\models\DataModel;
 use TugasAkhir\models\roles\Permission;
 use TugasAkhir\models\roles\Role;
@@ -13,9 +16,13 @@ use UnexpectedValueException;
 class User extends DataModel
 {
 
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+    private const int SECURITY_STAMP_LENGTH = 32;
+    private const int REMEMBER_ME_TIME = 60 * 60 * 24 * 10;
+
     protected static function getDatabase(): ?Database
     {
-        return Registries::get("mainDB");
+        return App::getInstance()->mainDatabase;
     }
 
     protected static function getTableName(): string
@@ -33,19 +40,18 @@ class User extends DataModel
             "role_id" => "INT NOT NULL",
             "last_login" => "DATETIME",
             "created_at" => "DATETIME DEFAULT CURRENT_TIMESTAMP",
-            "updated_at" => "DATETIME DEFAULT CURRENT_TIMESTAMP"
+            "updated_at" => "DATETIME DEFAULT CURRENT_TIMESTAMP",
+            "token" => "VARCHAR(" . self::SECURITY_STAMP_LENGTH . ") NOT NULL",
         ];
     }
 
     public string $password;
-    private string $rawPassword;
 
     public function __construct(
         public string        $email,
         public string        $username,
         string               $rawPassword,
         public Role|int      $role,
-        bool                 $hash_password = true,
         public readonly ?int $id = null
     )
     {
@@ -53,21 +59,15 @@ class User extends DataModel
             throw new InvalidArgumentException("Invalid email address");
         }
 
-        $this->rawPassword = $rawPassword;
-
         if (is_int($role)) {
             $foundRole = Role::findById($role);
-            if($foundRole === null) {
+            if ($foundRole === null) {
                 throw new InvalidArgumentException("Role with id '$role' not found");
             }
             $this->role = $foundRole;
         }
 
-        if ($hash_password) {
-            $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
-        } else {
-            $this->password = $rawPassword;
-        }
+        $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
     }
 
     public function register(): void
@@ -82,11 +82,11 @@ class User extends DataModel
         $password = $this->password;
         $roleId = $this->role->id;
 
-        if (!empty(static::select(['email' => $email], 'id', 1))) {
+        if (static::exists(['email' => $email])) {
             throw new UnexpectedValueException("Email address is already registered.");
         }
 
-        if (!empty(static::select(['username' => $username], 'id', 1))) {
+        if (static::exists(['username' => $username])) {
             throw new UnexpectedValueException("Username is already used.");
         }
 
@@ -94,24 +94,9 @@ class User extends DataModel
             "email" => $email,
             "username" => $username,
             "password" => $password,
-            "role_id" => $roleId
+            "role_id" => $roleId,
+            "token" => static::generateToken()
         ]);
-    }
-
-    public function login(): ?self
-    {
-        $userData = static::get(['email' => $this->email]);
-
-        if ($userData && password_verify($this->rawPassword, $userData->password)) {
-            $_SESSION['user_id'] = $userData->id;
-            $_SESSION['username'] = $userData->username;
-            $_SESSION['role_id'] = $userData->role->id;
-
-            static::update(['last_login' => date("Y-m-d H:i:s")], ['id' => $userData->id]);
-            return $userData;
-        }
-
-        return null;
     }
 
     public function hasPermission(Permission $permission): bool
@@ -126,13 +111,47 @@ class User extends DataModel
             return null;
         }
         $u = $data[0];
-        return new static($u['email'], $u['username'], $u['password'], $u['role_id'], false, (int)$u['id']);
+        return new static($u['email'], $u['username'], $u['password'], $u['role_id'], (int)$u['id']);
     }
 
     public static function update(array $set, array $where): bool
     {
-        $set['updated_at'] = date("Y-m-d H:i:s");
+        $set['updated_at'] = date(self::DATE_FORMAT);
+        if (array_key_exists('email', $set) || array_key_exists('password', $set)) {
+            $set['token'] = static::generateToken();
+        }
         return parent::update($set, $where);
+    }
+
+    public static function authenticate(string $email, string $rawPassword, bool $rememberMe = false): ?self
+    {
+        $userData = static::get(['email' => $email]);
+
+        if ($userData && password_verify($rawPassword, $userData->password)) {
+            Registries::setSession(SessionKey::USER_ID, $userData->id);
+            Registries::setSession(SessionKey::USER_EMAIL, $userData->email);
+            Registries::setSession(SessionKey::USER_USERNAME, $userData->username);
+            Registries::setSession(SessionKey::USER_ROLE, $userData->role);
+
+            if ($rememberMe) {
+                Registries::setCookie(
+                    CookieKey::USER_TOKEN,
+                    static::select(["email" => $email], ["token"])["token"],
+                    self::REMEMBER_ME_TIME,
+                );
+            }
+
+            static::update(['last_login' => date(self::DATE_FORMAT)], ['id' => $userData->id]);
+
+            return $userData;
+        }
+
+        return null;
+    }
+
+    public static function generateToken(): string
+    {
+        return bin2hex(random_bytes(self::SECURITY_STAMP_LENGTH / 2));
     }
 
 }

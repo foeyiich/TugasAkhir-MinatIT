@@ -1,12 +1,11 @@
 <?php
+
 namespace TugasAkhir\utils;
-use InvalidArgumentException;
 
 use InvalidArgumentException;
 
 final class UtilityClass
 {
-
     private function __construct()
     {
         // Utility class

@@ -1,9 +1,10 @@
 <?php
+
 namespace TugasAkhir\core;
 
 class EnvironmentVariable
 {
-    public const FILE_PATH = PROJECT_ROOT . DIRECTORY_SEPARATOR . ".env";
+    public const string FILE_PATH = PROJECT_ROOT . DIRECTORY_SEPARATOR . ".env";
 
     private static array $env = [];
 
@@ -12,13 +13,14 @@ class EnvironmentVariable
         EnvKey::DB_TYPE->name => 'sqlite',
         '',
         '#  Points to the SQLite file. Ignore this if you are using MySQL.',
-        EnvKey::DB_SQL_FILE->name => 'database.sqlite',
+        EnvKey::DB_SQLITE_FILE->name => 'database.sqlite',
         '',
         '#  Pointing to the MySQL server. Ignore this if you are using SQLite',
-        EnvKey::DB_MYSQL_HOST->name => 'localhost',
-        EnvKey::DB_MYSQL_NAME->name => 'tugas_akhir',
-        EnvKey::DB_MYSQL_USER->name => 'root',
-        EnvKey::DB_MYSQL_PASS->name => ''
+        "#" . EnvKey::DB_MYSQL_HOST->name => 'localhost',
+        "#" . EnvKey::DB_MYSQL_USER->name => 'root',
+        "#" . EnvKey::DB_MYSQL_PASSWORD->name => '',
+        "#" . EnvKey::DB_MYSQL_PORT->name => '3306',
+        "#" . EnvKey::DB_MYSQL_DATABASE->name => 'tugas_akhir',
     ];
 
     public static function load(): void
@@ -27,9 +29,8 @@ class EnvironmentVariable
             self::initializeFile();
         }
 
-        $envData = parse_ini_file(self::FILE_PATH) ?: [];
-
-        self::$env = array_merge(self::$defaults, $envData);
+        $data = parse_ini_file(self::FILE_PATH);
+        self::$env = $data ?: [];
     }
 
     private static function initializeFile(): void
@@ -47,7 +48,12 @@ class EnvironmentVariable
 
     public static function get(EnvKey $envKey): ?string
     {
-        return self::$env[$envKey->name] ?? null;
+        return self::$env[$envKey->name] ?? self::getDefault($envKey) ?? '';
+    }
+
+    public static function getDefault(EnvKey $envKey): ?string
+    {
+        return self::$defaults[$envKey->name] ?? null;
     }
 
 }
