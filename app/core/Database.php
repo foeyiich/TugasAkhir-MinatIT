@@ -107,19 +107,10 @@ final class Database
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function selectAll(string $tableName, array|string $data = "*", int $limit = 100): array
+    public function selectAll(string $tableName, int $limit = 100): array
     {
-        if (is_array($data)) {
-            UtilityClass::validateListArray($data);
-            $dataSql = implode(", ", $data);
-        } else {
-            $dataSql = $data;
-        }
-
-        $sql = "SELECT $dataSql FROM $tableName LIMIT $limit";
-
+        $sql = "SELECT * FROM $tableName LIMIT $limit";
         $stmt = $this->getConnection()->query($sql);
-
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
