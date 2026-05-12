@@ -4,8 +4,8 @@ namespace TugasAkhir\models\roles;
 
 use InvalidArgumentException;
 use RuntimeException;
-use TugasAkhir\App;
 use TugasAkhir\core\Database;
+use TugasAkhir\core\registries\Registries;
 use TugasAkhir\models\DataModel;
 use TugasAkhir\utils\UtilityClass;
 
@@ -14,7 +14,7 @@ class Role extends DataModel
 
     protected static function getDatabase(): ?Database
     {
-        return App::getInstance()->mainDatabase;
+        return Registries::get("mainDB");
     }
 
     protected static function getTableName(): string
