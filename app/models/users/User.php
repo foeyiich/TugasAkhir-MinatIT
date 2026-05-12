@@ -3,7 +3,6 @@
 namespace TugasAkhir\models\users;
 
 use InvalidArgumentException;
-use TugasAkhir\App;
 use TugasAkhir\core\Database;
 use TugasAkhir\core\registries\keys\CookieKey;
 use TugasAkhir\core\registries\keys\SessionKey;
