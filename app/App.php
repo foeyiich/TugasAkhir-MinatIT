@@ -43,7 +43,7 @@ final class App
             die("Database type not supported");
         }
 
-        Registries::bind("mainDB", $this->mainDatabase);
+        Registries::setMainDatabase($this->mainDatabase);
 
         Role::init();
         Role::seedDefaults();

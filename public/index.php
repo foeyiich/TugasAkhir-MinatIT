@@ -1,6 +1,6 @@
 <?php
-use TugasAkhir\models\users\User;
 use TugasAkhir\App;
+use TugasAkhir\core\Auth;
 
 define('PROJECT_ROOT', dirname(__DIR__));
 spl_autoload_register(function ($className) {
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $rememberMe = isset($_POST['remember_me']);
 
-    $user = User::authenticate($email, $password, $rememberMe);
+    $user = Auth::attempt($email, $password, $rememberMe);
 
     if ($user !== null) {
         header('Location: dashboard.php');
