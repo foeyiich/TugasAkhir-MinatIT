@@ -21,7 +21,7 @@ class User extends DataModel
 
     protected static function getDatabase(): ?Database
     {
-        return Registries::get("mainDB");
+        return Registries::getMainDatabase();
     }
 
     protected static function getTableName(): string
