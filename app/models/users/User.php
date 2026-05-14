@@ -67,6 +67,10 @@ class User extends DataModel
             $this->role = $foundRole;
         }
 
+        if ($this->role instanceof Role && $this->role->id === null) {
+            throw new InvalidArgumentException("Role must have an id");
+        }
+
         if ($hashPassword) {
             $this->password = password_hash($rawPassword, PASSWORD_DEFAULT);
         } else {
@@ -109,14 +113,95 @@ class User extends DataModel
         return !empty(in_array($permission, $this->role->permissions));
     }
 
+    public static function findById(int $id): ?static
+    {
+        return static::get(['id' => $id]);
+    }
+
     public static function get(array $condition): ?static
     {
         $data = static::select($condition, '*', 1);
         if (empty($data)) {
             return null;
         }
-        $u = $data[0];
-        return new static($u['email'], $u['username'], $u['password'], $u['role_id'], false, (int)$u['id']);
+
+        return static::fromRow($data[0]);
+    }
+
+    public static function findByRole(Role|int $role, int $limit = 100): array
+    {
+        $roleId = $role instanceof Role ? $role->id : $role;
+
+        if ($roleId === null) {
+            throw new InvalidArgumentException("Role must have an id");
+        }
+
+        $rows = static::select(['role_id' => $roleId], '*', $limit);
+
+        return array_map(fn(array $row) => static::fromRow($row), $rows);
+    }
+
+    public static function allAccounts(int $limit = 100): array
+    {
+        $rows = static::selectAll($limit);
+
+        return array_map(fn(array $row) => static::fromRow($row), $rows);
+    }
+
+    public static function createAccount(CreateAccountData $data): static
+    {
+        $user = new static($data->email, $data->username, $data->password, $data->role);
+        $user->register();
+
+        $createdUser = static::get(['email' => $data->email]);
+
+        if ($createdUser === null) {
+            throw new UnexpectedValueException("Failed to create user account.");
+        }
+
+        return $createdUser;
+    }
+
+    public static function updateAccount(int $id, UpdateAccountData $data): bool
+    {
+        $set = [];
+
+        if ($data->email !== null) {
+            $set['email'] = $data->email;
+        }
+
+        if ($data->username !== null) {
+            $set['username'] = $data->username;
+        }
+
+        if ($data->role !== null) {
+            $roleId = $data->role instanceof Role ? $data->role->id : $data->role;
+
+            if ($roleId === null || Role::findById((int)$roleId) === null) {
+                throw new InvalidArgumentException("Role not found.");
+            }
+
+            $set['role_id'] = (int)$roleId;
+        }
+
+        if (!$data->hasChanges() || empty($set)) {
+            return false;
+        }
+
+        return static::update($set, ['id' => $id]);
+    }
+
+    public static function changePassword(int $id, string $newPassword): bool
+    {
+        return static::update(
+            ['password' => password_hash($newPassword, PASSWORD_DEFAULT)],
+            ['id' => $id]
+        );
+    }
+
+    public static function deleteAccount(int $id): bool
+    {
+        return static::delete(['id' => $id]);
     }
 
     public static function update(array $set, array $where): bool
@@ -169,6 +254,18 @@ class User extends DataModel
     public static function generateToken(): string
     {
         return bin2hex(random_bytes(self::SECURITY_STAMP_LENGTH / 2));
+    }
+
+    private static function fromRow(array $row): static
+    {
+        return new static(
+            $row['email'],
+            $row['username'],
+            $row['password'],
+            (int)$row['role_id'],
+            false,
+            (int)$row['id']
+        );
     }
 
 }
