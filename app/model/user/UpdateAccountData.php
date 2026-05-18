@@ -1,9 +1,9 @@
 <?php
 
-namespace TugasAkhir\models\users;
+namespace TugasAkhir\model\user;
 
 use InvalidArgumentException;
-use TugasAkhir\models\roles\Role;
+use TugasAkhir\model\role\Role;
 
 final class UpdateAccountData
 {
@@ -11,8 +11,8 @@ final class UpdateAccountData
     public readonly ?string $username;
 
     public function __construct(
-        ?string $email = null,
-        ?string $username = null,
+        ?string                       $email = null,
+        ?string                       $username = null,
         public readonly Role|int|null $role = null
     )
     {

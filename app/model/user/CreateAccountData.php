@@ -1,9 +1,9 @@
 <?php
 
-namespace TugasAkhir\models\users;
+namespace TugasAkhir\model\user;
 
 use InvalidArgumentException;
-use TugasAkhir\models\roles\Role;
+use TugasAkhir\model\role\Role;
 
 final class CreateAccountData
 {
@@ -12,9 +12,9 @@ final class CreateAccountData
     public readonly string $password;
 
     public function __construct(
-        string $email,
-        string $username,
-        string $password,
+        string                   $email,
+        string                   $username,
+        string                   $password,
         public readonly Role|int $role
     )
     {
