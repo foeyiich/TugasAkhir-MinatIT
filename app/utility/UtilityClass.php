@@ -1,5 +1,7 @@
 <?php
-namespace TugasAkhir\utils;
+
+namespace TugasAkhir\utility;
+
 use InvalidArgumentException;
 
 final class UtilityClass
@@ -11,14 +13,14 @@ final class UtilityClass
 
     public static function validateMapArray(array $data): void
     {
-        if (array_is_list($data)) {
+        if (!empty($data) && array_is_list($data)) {
             throw new InvalidArgumentException("Data must be a map.");
         }
     }
 
     public static function validateListArray(array $data): void
     {
-        if (!array_is_list($data)) {
+        if (!empty($data) && !array_is_list($data)) {
             throw new InvalidArgumentException("Data must be a list.");
         }
     }
