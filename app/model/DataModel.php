@@ -44,9 +44,6 @@ abstract class DataModel
      */
     public static function init(): void
     {
-        if (is_null(static::getDatabase())) {
-            die("Database connection for class " . static::class . " not set");
-        }
         static::getDatabase()->createTable(static::getTableName(), static::getSchema());
     }
 

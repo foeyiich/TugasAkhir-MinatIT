@@ -14,10 +14,11 @@ use TugasAkhir\utility\UtilityClass;
 final class Database
 {
 
-    private ?PDO $connection = null {
-        get {
-            return $this->connection;
-        }
+    private ?PDO $connection = null;
+
+    public function getConnection(): ?PDO
+    {
+        return $this->connection;
     }
 
     /**
