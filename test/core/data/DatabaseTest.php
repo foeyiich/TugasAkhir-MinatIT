@@ -2,6 +2,7 @@
 
 namespace Test\core\data;
 
+use Test\Test;
 use Test\TestCase;
 use TugasAkhir\core\data\Database;
 
@@ -9,25 +10,22 @@ class DatabaseTest extends TestCase
 {
     private Database $db;
 
-    public function run(): void
+    public function onStart(): void
     {
         echo "Connecting to database...\n";
         $this->db = Database::create('sqlite::memory:');
-
-        $this->testCreateTable();
-        $this->testInsertAndSelect();
-        $this->testUpdate();
-        $this->testDelete();
     }
 
-    private function testCreateTable(): void
+    #[Test]
+    public function testCreateTable(): void
     {
         $sql = "CREATE TABLE test (id INTEGER AUTO_INCREMENT PRIMARY KEY, name TEXT)";
         $this->db->exec($sql);
         $this->pass("Table created successfully");
     }
 
-    private function testInsertAndSelect(): void
+    #[Test]
+    public function testInsertAndSelect(): void
     {
         $data = ['id' => 1, 'name' => 'Juan'];
         $this->db->insert('test', $data);
@@ -39,7 +37,8 @@ class DatabaseTest extends TestCase
         $this->assertEquals('Juan', $results[0]['name'], "Name should match");
     }
 
-    private function testUpdate(): void
+    #[Test]
+    public function testUpdate(): void
     {
         $set = ['name' => 'Anderson'];
         $where = ['id' => 1];
@@ -49,7 +48,8 @@ class DatabaseTest extends TestCase
         $this->assertEquals('Anderson', $results[0]['name'], "Name should be updated");
     }
 
-    private function testDelete(): void
+    #[Test]
+    public function testDelete(): void
     {
         $where = ['id' => 1];
         $this->db->delete('test', $where);

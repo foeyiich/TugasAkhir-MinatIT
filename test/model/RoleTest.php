@@ -2,6 +2,7 @@
 
 namespace Test\model;
 
+use Test\Test;
 use Test\TestCase;
 use TugasAkhir\core\data\Database;
 use TugasAkhir\core\registry\Registries;
@@ -11,24 +12,21 @@ use TugasAkhir\model\role\Role;
 class RoleTest extends TestCase
 {
 
-    public function run(): void
+    public function onStart(): void
     {
         $db = Database::create('sqlite::memory:');
         Registries::setMainDatabase($db);
-
-        $this->testInitialization();
-        $this->testRoleCreation();
-        $this->testPermissionsJson();
-        $this->testSeedDefaults();
     }
 
-    private function testInitialization(): void
+    #[Test]
+    public function testInitialization(): void
     {
         Role::init();
         $this->pass("Role table initialized successfully.");
     }
 
-    private function testRoleCreation(): void
+    #[Test]
+    public function testRoleCreation(): void
     {
         $role = new Role("Test Role", "Description", [Permission::MANAGE_ACCOUNTS]);
         Role::insert([
@@ -43,7 +41,8 @@ class RoleTest extends TestCase
         $this->assertEquals(1, count($found->permissions), "Should have 1 permission.");
     }
 
-    private function testPermissionsJson(): void
+    #[Test]
+    public function testPermissionsJson(): void
     {
         $perms = [Permission::MANAGE_GRADES, Permission::MANAGE_ATTENDANCE];
         $json = Role::permissionsToJson($perms);
@@ -52,7 +51,8 @@ class RoleTest extends TestCase
         $this->assertEquals("MANAGE_GRADES", $decoded[0], "JSON decoding should preserve permission names.");
     }
 
-    private function testSeedDefaults(): void
+    #[Test]
+    public function testSeedDefaults(): void
     {
         Role::seedDefaults();
         $kurikulum = Role::findById(3);

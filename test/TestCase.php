@@ -3,6 +3,8 @@
 namespace Test;
 
 use Countable;
+use ReflectionClass;
+use ReflectionMethod;
 use Throwable;
 
 abstract class TestCase
@@ -10,10 +12,17 @@ abstract class TestCase
     protected int $passedCount = 0;
     protected int $failedCount = 0;
     protected array $errors = [];
+    private ReflectionClass $reflectionClass;
+    protected string $currentMethod = "";
+
+    public function __construct()
+    {
+        $this->reflectionClass = new ReflectionClass($this);
+    }
 
     final public function printStart(): void
     {
-        echo "\e[34m------------------ TEST START: " . static::class . " ------------------\n\e[0m";
+        echo "\e[34m------------------ TEST START: " . $this->reflectionClass->getShortName() . " ------------------\n\e[0m";
     }
 
     public function onStart(): void
@@ -24,7 +33,26 @@ abstract class TestCase
     {
     }
 
-    abstract public function run(): void;
+    public function run(): void
+    {
+        $methods = $this->reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        foreach ($methods as $method) {
+            $attributes = $method->getAttributes(Test::class);
+
+            if (!empty($attributes)) {
+                $methodName = $method->getName();
+
+                $this->currentMethod = $methodName;
+
+                try {
+                    $method->invoke($this);
+                } catch (Throwable $e) {
+                    echo "\e[1;31m⚠️ [FATAL ERROR] " . $this->getNamespace() . ": " . $e->getMessage() . "\n";
+                }
+            }
+        }
+    }
 
     protected function assertEquals(mixed $expected, mixed $actual, string $message = ""): void
     {
@@ -132,7 +160,8 @@ abstract class TestCase
     protected function pass(string $message = ""): void
     {
         $this->passedCount++;
-        $output = "✅ [PASS]";
+
+        $output = "✔ [PASS] " . $this->getNamespace();
         if ($message !== "") {
             $output .= " - $message";
         }
@@ -142,7 +171,7 @@ abstract class TestCase
     protected function fail(string $message = "", string $extraDetail = ""): void
     {
         $this->failedCount++;
-        $output = "❌ [FAIL]";
+        $output = "✘ [FAIL] " . $this->getNamespace();
 
         if ($message !== "") {
             $output .= " - $message";
@@ -167,4 +196,14 @@ abstract class TestCase
         }
         echo "\n";
     }
+
+    private function getNamespace(): string
+    {
+        $namespace = "";
+        if (!empty($this->currentMethod)) {
+            $namespace = '[' . $this->reflectionClass->getShortName() . "::" . $this->currentMethod . ']';
+        }
+        return $namespace;
+    }
+
 }

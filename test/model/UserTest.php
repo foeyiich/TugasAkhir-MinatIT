@@ -2,6 +2,7 @@
 
 namespace Test\model;
 
+use Test\Test;
 use Test\TestCase;
 use TugasAkhir\core\data\Database;
 use TugasAkhir\core\registry\Registries;
@@ -35,24 +36,10 @@ class UserTest extends TestCase
         User::init();
     }
 
-    public function run(): void
+    #[Test]
+    public function testUserRegistration(): void
     {
-
         $this->setupDatabase();
-        $this->testUserRegistration();
-
-        $this->setupDatabase();
-        $this->testUserAuthentication();
-
-        $this->setupDatabase();
-        $this->testFindUserByRole();
-
-        $this->setupDatabase();
-        $this->testSqlInjection();
-    }
-
-    private function testUserRegistration(): void
-    {
         $data = new CreateAccountData(
             "test@example.com",
             "testuser",
@@ -65,8 +52,14 @@ class UserTest extends TestCase
         $this->assertTrue(User::exists(['email' => "test@example.com"]), "User should exist in database.");
     }
 
-    private function testUserAuthentication(): void
+    #[Test]
+    public function testUserAuthentication(): void
     {
+        $this->setupDatabase();
+        
+        $data = new CreateAccountData("test@example.com", "testuser", "password123", 1);
+        User::createAccount($data);
+
         $user = User::authenticate("test@example.com", "password123");
         $this->assertNotNull($user, "Authentication should succeed with correct credentials.");
 
@@ -74,14 +67,22 @@ class UserTest extends TestCase
         $this->assertNull($fail, "Authentication should fail with incorrect password.");
     }
 
-    private function testFindUserByRole(): void
+    #[Test]
+    public function testFindUserByRole(): void
     {
+        $this->setupDatabase();
+
+        $data = new CreateAccountData("test@example.com", "testuser", "password123", 1);
+        User::createAccount($data);
+
         $users = User::findByRole(1);
         $this->assertTrue(count($users) > 0, "Should find at least one user with role ID 1.");
     }
 
-    private function testSqlInjection(): void
+    #[Test]
+    public function testSqlInjection(): void
     {
+        $this->setupDatabase();
         $maliciousEmail = "test@example.com' OR '1'='1";
         $injectedUser = User::authenticate($maliciousEmail, "any_password");
 
