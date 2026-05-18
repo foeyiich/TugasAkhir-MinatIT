@@ -4,6 +4,7 @@ namespace Test\model;
 
 use Test\TestCase;
 use TugasAkhir\core\data\Database;
+use TugasAkhir\core\registry\Registries;
 use TugasAkhir\core\registry\SessionManager;
 use TugasAkhir\model\role\Role;
 use TugasAkhir\model\user\CreateAccountData;
@@ -25,11 +26,9 @@ class UserTest extends TestCase
         SessionManager::getInstance()->destroy();
     }
 
-    private Database $database;
-
     private function setupDatabase(): void
     {
-        $this->database = Database::create('sqlite::memory:');
+        Registries::setMainDatabase(Database::create('sqlite::memory:'));
 
         Role::init();
         Role::seedDefaults();

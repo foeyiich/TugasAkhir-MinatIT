@@ -163,7 +163,7 @@ abstract class TestCase
         echo "\e[0;0m--- TEST RESULT: " . static::class . "\n";
         echo "Passed: \e[0;32m$this->passedCount\e[0;0m | Failed: \e[0;31m$this->failedCount\n\e[0;0m";
         if (!empty($this->errors)) {
-            echo "Error Detail:\n" . implode("\n", $this->errors) . "\n\e[0;0m";
+            echo "Error Detail:\n   " . implode("\n   ", $this->errors) . "\n\e[0;0m";
         }
         echo "\n";
     }
