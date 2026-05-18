@@ -2,16 +2,17 @@
 
 namespace TugasAkhir\core;
 
-use TugasAkhir\core\registries\keys\CookieKey;
-use TugasAkhir\core\registries\keys\SessionKey;
-use TugasAkhir\core\registries\Registries;
-use TugasAkhir\models\roles\Permission;
-use TugasAkhir\models\users\User;
+use TugasAkhir\core\registry\key\CookieKey;
+use TugasAkhir\core\registry\key\SessionKey;
+use TugasAkhir\core\registry\Registries;
+use TugasAkhir\model\role\Permission;
+use TugasAkhir\model\user\User;
 
-final class Auth
+final class Authentication
 {
     private function __construct()
     {
+        // Utility Class
     }
 
     public static function attempt(string $email, string $password, bool $rememberMe = false): ?User
@@ -21,12 +22,12 @@ final class Auth
 
     public static function check(): bool
     {
-        return Registries::getSession(SessionKey::USER_ID) !== null;
+        return Registries::session()->get(SessionKey::USER_ID) !== null;
     }
 
     public static function id(): ?int
     {
-        $id = Registries::getSession(SessionKey::USER_ID);
+        $id = Registries::session()->get(SessionKey::USER_ID);
 
         return $id === null ? null : (int)$id;
     }
@@ -44,7 +45,7 @@ final class Auth
 
     public static function roleId(): ?int
     {
-        $roleId = Registries::getSession(SessionKey::USER_ROLE);
+        $roleId = Registries::session()->get(SessionKey::USER_ROLE);
 
         return $roleId === null ? null : (int)$roleId;
     }
@@ -76,11 +77,11 @@ final class Auth
 
     public static function logout(): void
     {
-        Registries::removeSession(SessionKey::USER_ID);
-        Registries::removeSession(SessionKey::USER_EMAIL);
-        Registries::removeSession(SessionKey::USER_USERNAME);
-        Registries::removeSession(SessionKey::USER_ROLE);
-        Registries::removeCookie(CookieKey::USER_TOKEN);
+        Registries::session()->remove(SessionKey::USER_ID);
+        Registries::session()->remove(SessionKey::USER_EMAIL);
+        Registries::session()->remove(SessionKey::USER_USERNAME);
+        Registries::session()->remove(SessionKey::USER_ROLE);
+        Registries::cookie()->remove(CookieKey::USER_TOKEN);
 
         session_regenerate_id(true);
     }
