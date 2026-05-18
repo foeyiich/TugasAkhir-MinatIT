@@ -1,6 +1,6 @@
 <?php
 
-namespace TugasAkhir\core\registries\keys;
+namespace TugasAkhir\core\registry\key;
 
 enum SessionKey
 {
