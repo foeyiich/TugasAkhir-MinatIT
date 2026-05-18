@@ -1,18 +1,18 @@
 <?php
 
-namespace TugasAkhir\models\roles;
+namespace TugasAkhir\model\role;
 
 use InvalidArgumentException;
-use RuntimeException;
-use TugasAkhir\core\Database;
-use TugasAkhir\core\registries\Registries;
-use TugasAkhir\models\DataModel;
-use TugasAkhir\utils\UtilityClass;
+use TugasAkhir\core\data\Database;
+use TugasAkhir\core\registry\Registries;
+use TugasAkhir\model\DataModel;
+use TugasAkhir\utility\UtilityClass;
+use UnexpectedValueException;
 
 class Role extends DataModel
 {
 
-    protected static function getDatabase(): ?Database
+    protected static function getDatabase(): Database
     {
         return Registries::getMainDatabase();
     }
@@ -24,12 +24,7 @@ class Role extends DataModel
 
     protected static function getSchema(): array
     {
-        return [
-            "id" => "INT AUTO_INCREMENT PRIMARY KEY",
-            "name" => "VARCHAR(50) NOT NULL",
-            "description" => "VARCHAR(255) NOT NULL",
-            "permissions" => "JSON NOT NULL",
-        ];
+        return RoleField::buildSchema();
     }
 
     public function __construct(
@@ -39,9 +34,11 @@ class Role extends DataModel
         public ?int   $id = null
     )
     {
-        UtilityClass::validateListArray($permissions);
-        if (empty($name))
+        if (empty($name)) {
             throw new InvalidArgumentException("Name cannot be empty");
+        }
+        UtilityClass::validateListArray($this->permissions);
+        $this->permissions = array_unique($this->permissions, SORT_REGULAR);
     }
 
     public static function findById(int $id): ?self
@@ -62,7 +59,6 @@ class Role extends DataModel
     public static function getOrWrite(int $id, self $role): self
     {
         $value = self::findById($id);
-
         if ($value !== null) {
             return $value;
         }
@@ -74,32 +70,22 @@ class Role extends DataModel
             "permissions" => self::permissionsToJson($role->permissions),
         ]);
 
-        $createdRole = self::findById($id);
-
-        if ($createdRole === null) {
-            throw new RuntimeException("Error bikin role dengan id $id");
-        }
-
-        return $createdRole;
+        return self::findById($id) ?? throw new UnexpectedValueException("Unable to create role.");
     }
 
     public static function permissionsToJson(array $permissions): string
     {
+        UtilityClass::validateListArray($permissions);
         return json_encode(array_map(
-            fn($permission) => $permission instanceof Permission ? $permission->name : $permission,
+            static fn($p) => $p instanceof Permission ? $p->name : (string)$p,
             $permissions
-        ));
+        ), JSON_THROW_ON_ERROR);
     }
 
     public static function permissionsFromJson(string $json): array
     {
-        $permissionNames = json_decode($json, true) ?? [];
-        return array_map(
-            fn($permissionName) => constant(Permission::class . "::" . $permissionName),
-            $permissionNames
-        );
+        return json_decode($json, true, 512, JSON_THROW_ON_ERROR) ?? [];
     }
-
 
     public static function seedDefaults(): void
     {
