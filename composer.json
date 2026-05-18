@@ -1,0 +1,14 @@
+{
+  "name": "tugas-akhir/mvc-app",
+  "description": "Aplikasi Tugas Akhir",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "TugasAkhir\\": "app/",
+      "Test\\": "test/"
+    }
+  },
+  "require": {
+    "ext-pdo": "*"
+  }
+}
