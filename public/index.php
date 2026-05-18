@@ -1,26 +1,10 @@
 <?php
+declare(strict_types=1);
+
+require_once "../bootstrap/bootstrap.php";
+
 use TugasAkhir\App;
-use TugasAkhir\core\Auth;
-
-define('PROJECT_ROOT', dirname(__DIR__));
-spl_autoload_register(function ($className) {
-    $prefix = 'TugasAkhir\\';
-
-    $baseDir = PROJECT_ROOT . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR;
-
-    $len = strlen($prefix);
-    if (strncmp($prefix, $className, $len) !== 0) {
-        return;
-    }
-
-    $relativeClass = substr($className, $len);
-    $file = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
-
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-session_start();
+use TugasAkhir\core\Authentication;
 
 App::getInstance();
 $error = null;
@@ -30,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $rememberMe = isset($_POST['remember_me']);
 
-    $user = Auth::attempt($email, $password, $rememberMe);
+    $user = Authentication::attempt($email, $password, $rememberMe);
 
     if ($user !== null) {
         header('Location: dashboard.php');
@@ -40,4 +24,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Email atau password salah.';
 }
 
-require PROJECT_ROOT . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'login.php';
+require_once PROJECT_ROOT . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'login.php';
+
